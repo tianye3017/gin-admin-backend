@@ -1,0 +1,85 @@
+definitions:
+  api.editPasswordStruct:
+    properties:
+      new_password:
+        description: 长度大于等于6,小于等于10,与旧密码不同
+        type: string
+      new_password_again:
+        description: 长度大于等于6,小于等于10,与新密码相同
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - new_password_again
+    - old_password
+    type: object
+  api.registAndLoginStuct:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /user/editpwd:
+    post:
+      parameters:
+      - description: 修改密码接口
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.editPasswordStruct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":20000,"message":"修改成功","data":""}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 修改密码
+      tags:
+      - User
+  /user/info:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":20000,"message":"ok","data":""}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户菜单列表以及昵称
+      tags:
+      - User
+  /user/login:
+    post:
+      parameters:
+      - description: 用户登录接口
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.registAndLoginStuct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":20000,"message":"ok","data":{}}'
+          schema:
+            type: string
+      summary: 用户登录
+      tags:
+      - User
+swagger: "2.0"
