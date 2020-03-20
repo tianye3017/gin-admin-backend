@@ -19,6 +19,13 @@ type registAndLoginStuct struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type editUserInfoStruct struct {
+	NickName string `json:"nick_name"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Memo     string `json:"memo"`
+}
+
 type editPasswordStruct struct {
 	OldPassword      string `json:"old_password" binding:"required"`
 	NewPassword      string `json:"new_password" binding:"required,min=6,max=10"`                           //长度大于等于6,小于等于10,与旧密码不同
@@ -45,6 +52,9 @@ type userData struct {
 	Introduction string           `json:"introduction"` // 介绍
 	Avatar       string           `json:"avatar"`       // 图标
 	Name         string           `json:"name"`         // 姓名
+	Email        string           `json:"email"`        // 邮箱
+	Phone        string           `json:"phone"`        // 手机
+	Memo         string           `json:"memo"`         // 备注
 }
 
 // @Tags User
@@ -73,6 +83,29 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 	tokenNext(c, user)
+}
+
+func EditUserInfo(c *gin.Context) {
+	var infoData editUserInfoStruct
+	c.BindJSON(&infoData)
+	user := new(sysmodel.SysUser)
+	claims, _ := c.Get("claims")
+	claimsData := claims.(*middleware.CustomClaims)
+	user.NickName = infoData.NickName
+	user.Email = infoData.Email
+	user.Phone = infoData.Phone
+	user.Memo = infoData.Memo
+	affected, err := db.DB.Id(claimsData.Id).Update(user)
+	if err != nil {
+		service.ResFail(c, err.Error())
+		return
+	}
+	if affected == 0 {
+		service.ResFail(c, "修改失败")
+		return
+	}
+	service.ResSuccess(c, "修改成功", "")
+	return
 }
 
 // @Tags User
@@ -152,10 +185,14 @@ func UserInfo(c *gin.Context) {
 		}
 		menus = setMenu(userMenus, topmenuid)
 	}
-	resData := userData{Menus: menus, Name: claimsData.NickName}
+	resData := userData{Menus: menus}
 	user := new(sysmodel.SysUser)
-	db.DB.Cols("avatar").Where("id = ?", claimsData.Id).Get(user)
+	db.DB.Cols("nick_name, avatar, email, phone, memo").Where("id = ?", claimsData.Id).Get(user)
+	resData.Name = user.NickName
 	resData.Avatar = user.Avatar
+	resData.Email = user.Email
+	resData.Phone = user.Phone
+	resData.Memo = user.Memo
 	service.ResSuccess(c, "ok", resData)
 	return
 }

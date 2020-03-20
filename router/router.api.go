@@ -11,6 +11,7 @@ func init() {
 	userGroup := engine.Router.Group("user").Use(middleware.JWTAuth())
 	{
 		userGroup.GET("info", api.UserInfo)
+		userGroup.POST("editinfo", api.EditUserInfo)
 		userGroup.POST("editpwd", api.EditPassword)
 		userGroup.POST("logout", api.Logout)
 	}
